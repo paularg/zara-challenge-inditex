@@ -1,7 +1,22 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  cacheComponents: true,
+  experimental: {
+    serverComponentsHmrCache: false,
+  },
+  images: {
+    unoptimized: Boolean(process.env.E2E_PRODUCT_API_URL),
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'prueba-tecnica-api-tienda-moviles.onrender.com',
+        port: '',
+        pathname: '/images/**',
+        search: '',
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

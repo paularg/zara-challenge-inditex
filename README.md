@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MBST Smartphone Store
 
-## Getting Started
+MBST is a responsive Next.js storefront for browsing and searching smartphone
+Products, choosing an exact Product variant, and keeping that selection in a
+persisted Cart. Checkout and deployment are intentionally outside this
+technical exercise.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20.9 or newer; CI uses Node.js 24.
+- pnpm 11.9.0, as pinned by `packageManager` in `package.json`.
+- A challenge API key for live development.
+
+Install the locked dependencies and create the local environment file:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install --frozen-lockfile
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Replace the placeholder in `.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```dotenv
+API_KEY=your_api_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`API_KEY` is read only by the Next.js server. It is never exposed through a
+`NEXT_PUBLIC_` variable or sent to the browser. `.env` is ignored by Git.
 
-## Learn More
+## Development and quality commands
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000). The repository exposes
+each delivery gate independently:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Purpose                       | Command             |
+| ----------------------------- | ------------------- |
+| Format files                  | `pnpm format`       |
+| Check formatting              | `pnpm format:check` |
+| Lint                          | `pnpm lint`         |
+| Type-check                    | `pnpm typecheck`    |
+| Build for production          | `pnpm build`        |
+| Start the production build    | `pnpm start`        |
+| Run Vitest                    | `pnpm test`         |
+| Run Vitest in watch mode      | `pnpm test:watch`   |
+| Run the production E2E matrix | `pnpm test:e2e`     |
 
-## Deploy on Vercel
+Install Playwright browsers before the first local E2E run when needed:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm exec playwright install chromium chrome msedge firefox webkit
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture
+
+The application uses the Next.js 16 App Router, React Server Components, and
+Cache Components. Route composition and remote Product reads stay on the
+server. Client Components are limited to Search interaction, Product variant
+configuration, imagery and carousel behavior, Cart hydration, and Cart state.
+
+`src/features/products/server.ts` is the only Product API entry point. It
+exports `getCatalog(query)` and `getProduct(productId)`, attaches `API_KEY` as
+`x-api-key`, validates external payloads, and delegates normalization to the
+Product data core. Successful live reads use `use cache` with
+`cacheLife('minutes')`; route-level Suspense boundaries stream dynamic results
+inside a prerendered shell. Failures remain recoverable and are not cached as
+valid Product data.
+
+Product images use `next/image`. Production allows only the challenge API's
+HTTPS `/images/**` path. E2E sets a fixture endpoint and disables image
+optimization so Product data and imagery remain deterministic without external
+network access.
+
+The Cart is a client-owned Zustand store persisted under `mbst-cart`, version
+
+1. Hydration is explicit, corrupt or incompatible state recovers to an empty
+   Cart, and saved Cart lines retain captured prices without refetching or
+   repricing Products.
+
+See [architecture](docs/architecture.md), [conventions](docs/conventions.md),
+the [domain glossary](CONTEXT.md), and the binding [design system](DESIGN.md)
+for the detailed contracts.
+
+## Testing and CI
+
+Vitest covers pure Product normalization, variants, Search helpers, Cart rules,
+and Client Component integration. Asynchronous Server Component composition is
+covered through Playwright against `next build` and `next start`.
+
+Playwright starts a local Product API fixture, uses a non-secret test key, and
+runs the responsive matrix in Chromium, Google Chrome, Microsoft Edge, Firefox,
+and the complete iPhone 15 Mobile Safari/WebKit profile. The journeys include
+axe WCAG 2.2 AA, keyboard, focus, console, network, persistence, deep-link, and
+overflow checks.
+
+`.github/workflows/quality.yml` runs format, lint, typecheck/build, Vitest, and
+Playwright as independent jobs with a frozen lockfile. Failed E2E runs upload
+the HTML Playwright report. CI performs no deployment.
+
+## Deliberate limitations
+
+- `PAY` is enabled but has no checkout or payment action.
+- No deployment or hosting configuration is included.
+- Live Product data and images depend on the challenge API's availability.
+- Helvetica Neue is used when locally available and is not distributed; Arial
+  and the generic sans-serif fallback preserve a reproducible build.
+- Cart data is persisted per browser origin and is not shared across different
+  domains or ports.
