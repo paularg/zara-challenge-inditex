@@ -25,7 +25,7 @@ export const getProductNavigation = (): ProductNavigation | null => {
   }
 }
 
-export const rememberProductNavigation = (href: string) => {
+export const rememberProductNavigation = (href: string): void => {
   const destination = new URL(href, window.location.origin)
 
   if (!destination.pathname.startsWith('/products/')) {
@@ -42,7 +42,7 @@ export const rememberProductNavigation = (href: string) => {
   }
 }
 
-export const forgetProductNavigation = () => {
+export const forgetProductNavigation = (): void => {
   try {
     window.sessionStorage.removeItem(productNavigationStorageKey)
   } catch {
@@ -50,5 +50,5 @@ export const forgetProductNavigation = () => {
   }
 }
 
-export const shouldReturnToRememberedProduct = () =>
+export const shouldReturnToRememberedProduct = (): boolean =>
   getProductNavigation()?.destinationPathname === window.location.pathname

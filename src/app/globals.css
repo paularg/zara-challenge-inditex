@@ -129,6 +129,59 @@
     padding-inline: var(--page-edge);
   }
 
+  /* Shared route states and navigation */
+
+  .route-state {
+    display: flex;
+    min-height: 344px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+    border-block: 0.5px solid var(--border);
+    padding: 40px var(--page-edge);
+  }
+
+  .route-state-copy {
+    display: flex;
+    max-width: 65ch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .route-state-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .route-state-message {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.25;
+  }
+
+  .back-row {
+    display: flex;
+    height: 44px;
+    align-items: center;
+    padding-inline: var(--page-edge);
+  }
+
+  .back-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
   /* Catalog */
 
   .catalog-shell {
@@ -359,59 +412,6 @@
 
   .catalog-empty-message {
     margin: 0;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 1.25;
-    text-transform: uppercase;
-  }
-
-  /* Shared route states and navigation */
-
-  .route-state {
-    display: flex;
-    min-height: 344px;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
-    border-block: 0.5px solid var(--border);
-    padding: 40px var(--page-edge);
-  }
-
-  .route-state-copy {
-    display: flex;
-    max-width: 65ch;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .route-state-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
-  .route-state-message {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 1.25;
-  }
-
-  .back-row {
-    display: flex;
-    height: 44px;
-    align-items: center;
-    padding-inline: var(--page-edge);
-  }
-
-  .back-link {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    gap: 4px;
     font-size: 12px;
     font-weight: 300;
     line-height: 1.25;

@@ -32,6 +32,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   tests, accessibility, naming, or user-facing copy.
 - **Verification** — Read `docs/verification.md` before validating or reporting
   any repository change as complete.
+- **Issues** — Read `docs/agents/issue-tracker.md` before creating, updating,
+  prioritizing, or closing tracked work.
 
 ## Product API
 
