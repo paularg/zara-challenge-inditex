@@ -44,12 +44,21 @@ aliases, and package behavior.
 
 - Read `DESIGN.md` before changing UI or styles and validate relevant Figma
   frames when composition changes.
+- Treat `DESIGN.md` as the visual contract and `src/app/globals.css` as the
+  centralized CSS implementation. Reconcile deliberate behavior changes in
+  both places instead of allowing them to drift.
+- Keep design tokens, resets, shared selectors, and feature styling in
+  `src/app/globals.css`. Group the file in this order: tokens, base behavior,
+  shared shell, Catalog, Product detail, Cart, responsive rules, then motion and
+  input-capability overrides. Omit an empty feature section when it uses only
+  local utility classes.
 - Use semantic HTML, associated labels, keyboard support, visible focus, useful
   alternatives, live announcements, and reduced-motion handling.
 - Build mobile-first and protect the five configured reference/intermediate
   viewports from overflow.
-- Reuse existing UI primitives; reserve global CSS for tokens, resets, and
-  cross-application behavior.
+- Reuse existing UI primitives and Tailwind utilities for small, local
+  composition. Do not introduce CSS Modules unless the repository-wide styling
+  strategy is deliberately changed and documented.
 
 ## Tests
 

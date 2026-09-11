@@ -1,3 +1,5 @@
+import { isNonEmptyString, isRecord } from '@/lib/validation'
+
 export type CartLineInput = {
   productId: string
   brand: string
@@ -65,12 +67,6 @@ export const selectCartUnitCount = (state: CartLinesState): number =>
 
 export const selectCartTotal = (state: CartLinesState): number =>
   state.lines.reduce((total, line) => total + line.unitPrice * line.quantity, 0)
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === 'string' && value.length > 0
 
 const isCartLine = (value: unknown): value is CartLine => {
   if (

@@ -4,94 +4,20 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ComponentProps } from 'react'
 
+import {
+  forgetProductNavigation,
+  rememberProductNavigation,
+  shouldReturnToRememberedProduct,
+} from '@/lib/productNavigationHistory'
+import {
+  canUseNavigationViewTransition,
+  startNavigationViewTransition,
+} from '@/lib/viewTransition'
+
 type ProductNavigationLinkProps = Omit<ComponentProps<typeof Link>, 'href'> & {
   href: string
   returnToPreviousPage?: boolean
 }
-
-const productNavigationStorageKey = 'mbst-product-navigation'
-
-type ProductNavigation = {
-  destinationPathname: string
-}
-
-const getProductNavigation = (): ProductNavigation | null => {
-  try {
-    const value = window.sessionStorage.getItem(productNavigationStorageKey)
-
-    if (!value) {
-      return null
-    }
-
-    const navigation: unknown = JSON.parse(value)
-
-    return typeof navigation === 'object' &&
-      navigation !== null &&
-      'destinationPathname' in navigation &&
-      typeof navigation.destinationPathname === 'string'
-      ? { destinationPathname: navigation.destinationPathname }
-      : null
-  } catch {
-    return null
-  }
-}
-
-const rememberProductNavigation = (href: string) => {
-  const destination = new URL(href, window.location.origin)
-
-  if (!destination.pathname.startsWith('/products/')) {
-    return
-  }
-
-  try {
-    window.sessionStorage.setItem(
-      productNavigationStorageKey,
-      JSON.stringify({ destinationPathname: destination.pathname }),
-    )
-  } catch {
-    // Navigation falls back to the target URL when browser storage is unavailable.
-  }
-}
-
-const forgetProductNavigation = () => {
-  try {
-    window.sessionStorage.removeItem(productNavigationStorageKey)
-  } catch {
-    // The browser history still provides the navigation fallback.
-  }
-}
-
-const prefersReducedMotion = () =>
-  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-
-const waitForNavigationCommit = (previousUrl: string) =>
-  new Promise<void>((resolve) => {
-    let settled = false
-    let timeout = 0
-    let checkTimer = 0
-    const finish = () => {
-      if (settled) return
-
-      settled = true
-      window.clearTimeout(timeout)
-      window.clearTimeout(checkTimer)
-      resolve()
-    }
-
-    const checkUrl = () => {
-      if (settled) return
-
-      if (window.location.href === previousUrl) {
-        checkTimer = window.setTimeout(checkUrl, 16)
-        return
-      }
-
-      finish()
-    }
-
-    timeout = window.setTimeout(finish, 3_000)
-    checkUrl()
-  })
 
 export const ProductNavigationLink = ({
   href,
@@ -102,12 +28,10 @@ export const ProductNavigationLink = ({
   const router = useRouter()
 
   const navigate = () => {
-    const navigation = getProductNavigation()
-    const shouldReturnToPreviousPage =
-      returnToPreviousPage &&
-      navigation?.destinationPathname === window.location.pathname
+    const shouldReturn =
+      returnToPreviousPage && shouldReturnToRememberedProduct()
 
-    if (shouldReturnToPreviousPage) {
+    if (shouldReturn) {
       forgetProductNavigation()
       router.back()
       return
@@ -125,15 +49,13 @@ export const ProductNavigationLink = ({
   > = (event) => {
     onNavigate?.(event)
 
-    if (prefersReducedMotion() || !document.startViewTransition) {
+    if (!canUseNavigationViewTransition()) {
       if (!returnToPreviousPage) {
         rememberProductNavigation(href)
         return
       }
 
-      if (
-        getProductNavigation()?.destinationPathname === window.location.pathname
-      ) {
+      if (shouldReturnToRememberedProduct()) {
         event.preventDefault()
         navigate()
       }
@@ -142,13 +64,7 @@ export const ProductNavigationLink = ({
     }
 
     event.preventDefault()
-    const previousUrl = window.location.href
-    const transition = document.startViewTransition(async () => {
-      navigate()
-      await waitForNavigationCommit(previousUrl)
-    })
-
-    void transition.finished.catch(() => undefined)
+    startNavigationViewTransition(navigate)
   }
 
   return <Link {...props} href={href} onNavigate={handleNavigate} />

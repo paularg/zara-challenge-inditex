@@ -2,6 +2,8 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Design tokens */
+
 :root {
   color-scheme: light;
   font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -85,6 +87,8 @@
   --radius-xl: 0px;
 }
 
+/* Base behavior */
+
 @layer base {
   * {
     @apply border-border;
@@ -114,6 +118,8 @@
   }
 }
 
+/* Shared application styles */
+
 @layer components {
   .focus-outline {
     @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black;
@@ -122,6 +128,61 @@
   .page-edge {
     padding-inline: var(--page-edge);
   }
+
+  /* Shared route states and navigation */
+
+  .route-state {
+    display: flex;
+    min-height: 344px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+    border-block: 0.5px solid var(--border);
+    padding: 40px var(--page-edge);
+  }
+
+  .route-state-copy {
+    display: flex;
+    max-width: 65ch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .route-state-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .route-state-message {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.25;
+  }
+
+  .back-row {
+    display: flex;
+    height: 44px;
+    align-items: center;
+    padding-inline: var(--page-edge);
+  }
+
+  .back-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  /* Catalog */
 
   .catalog-shell {
     display: flex;
@@ -357,56 +418,7 @@
     text-transform: uppercase;
   }
 
-  .route-state {
-    display: flex;
-    min-height: 344px;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
-    border-block: 0.5px solid var(--border);
-    padding: 40px var(--page-edge);
-  }
-
-  .route-state-copy {
-    display: flex;
-    max-width: 65ch;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .route-state-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
-  .route-state-message {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 1.25;
-  }
-
-  .back-row {
-    display: flex;
-    height: 44px;
-    align-items: center;
-    padding-inline: var(--page-edge);
-  }
-
-  .back-link {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    font-weight: 300;
-    line-height: 1.25;
-    text-transform: uppercase;
-  }
+  /* Product detail */
 
   .product-shell {
     display: flex;
@@ -739,6 +751,8 @@
   }
 }
 
+/* Responsive composition */
+
 @media (min-width: 768px) {
   :root {
     --page-edge: 40px;
@@ -951,6 +965,8 @@
     }
   }
 }
+
+/* Input capability and motion */
 
 @media (pointer: coarse) {
   .catalog-card-link:hover .catalog-card-wipe {

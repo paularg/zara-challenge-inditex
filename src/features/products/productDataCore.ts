@@ -7,6 +7,8 @@ import {
   type ProductSummary,
 } from './contracts'
 
+import { isNonEmptyString, isRecord } from '@/lib/validation'
+
 export const DEFAULT_PRODUCTS_ENDPOINT =
   'https://prueba-tecnica-api-tienda-moviles.onrender.com/products'
 const INITIAL_CATALOG_LIMIT = 20
@@ -32,12 +34,6 @@ const errorMessages = {
     server: 'The Product detail could not be loaded.',
   },
 } as const
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === 'string' && value.length > 0
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value)
