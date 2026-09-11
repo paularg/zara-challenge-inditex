@@ -2,6 +2,8 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Design tokens */
+
 :root {
   color-scheme: light;
   font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -85,6 +87,8 @@
   --radius-xl: 0px;
 }
 
+/* Base behavior */
+
 @layer base {
   * {
     @apply border-border;
@@ -114,6 +118,8 @@
   }
 }
 
+/* Shared application styles */
+
 @layer components {
   .focus-outline {
     @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black;
@@ -122,6 +128,8 @@
   .page-edge {
     padding-inline: var(--page-edge);
   }
+
+  /* Catalog */
 
   .catalog-shell {
     display: flex;
@@ -357,6 +365,8 @@
     text-transform: uppercase;
   }
 
+  /* Shared route states and navigation */
+
   .route-state {
     display: flex;
     min-height: 344px;
@@ -407,6 +417,8 @@
     line-height: 1.25;
     text-transform: uppercase;
   }
+
+  /* Product detail */
 
   .product-shell {
     display: flex;
@@ -739,6 +751,8 @@
   }
 }
 
+/* Responsive composition */
+
 @media (min-width: 768px) {
   :root {
     --page-edge: 40px;
@@ -951,6 +965,8 @@
     }
   }
 }
+
+/* Input capability and motion */
 
 @media (pointer: coarse) {
   .catalog-card-link:hover .catalog-card-wipe {

@@ -67,7 +67,7 @@ describe('Cart hydration and interaction', () => {
 
     await act(() => hydrateCart())
     expect(
-      screen.getByRole('link', { name: 'Cart, 1 item' }),
+      screen.getByRole('link', { name: 'Cart, 1 unit' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Cart (1)' }),

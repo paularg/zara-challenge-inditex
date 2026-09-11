@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Tienda de móviles API",
+    "title": "Smartphone Store API",
     "version": "1.0.0",
-    "description": "API para obtener información de productos de la tienda de móviles"
+    "description": "API for retrieving Product information from the smartphone store"
   },
   "components": {
     "schemas": {
