@@ -13,7 +13,7 @@ export const CartIndicator = () => {
     <Link
       aria-label={
         hasHydrated
-          ? `Cart, ${count} ${count === 1 ? 'item' : 'items'}`
+          ? `Cart, ${count} ${count === 1 ? 'unit' : 'units'}`
           : 'Cart, loading'
       }
       className="focus-outline inline-flex min-h-11 min-w-11 items-center justify-end gap-1.5 text-base leading-4 font-light uppercase"

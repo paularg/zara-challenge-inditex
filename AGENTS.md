@@ -17,10 +17,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Context router
 
+- **Scope** — Read `docs/challenge-brief.md` before changing routes, feature
+  requirements, acceptance criteria, or deliberate exclusions.
 - **Domain** — Read `CONTEXT.md` before changing Product, Product variant, Cart
   line, or Cart behavior; use its canonical vocabulary.
-- **Design** — Read `DESIGN.md` and inspect the relevant linked Figma frames
-  before changing UI, styling, responsive composition, assets, or interaction.
+- **Design** — Read `DESIGN.md` and the relevant selectors in
+  `src/app/globals.css` before changing UI, styling, responsive composition,
+  assets, or interaction. Inspect the linked Figma frames when composition
+  changes, and keep the visual contract and centralized CSS implementation
+  aligned.
 - **Architecture** — Read `docs/architecture.md` before changing boundaries,
   dependencies, state ownership, data flow, caching, or server/client placement.
 - **Conventions** — Read `docs/conventions.md` before changing source code,

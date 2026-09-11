@@ -54,6 +54,27 @@ Install Playwright browsers before the first local E2E run when needed:
 pnpm exec playwright install chromium chrome msedge firefox webkit
 ```
 
+## Reviewer guide
+
+The original challenge document is not stored in this repository. Start with
+the [reconstructed challenge brief](docs/challenge-brief.md), then read the
+[domain glossary](CONTEXT.md), [architecture](docs/architecture.md),
+[design system](DESIGN.md), and [conventions](docs/conventions.md). The Product
+server boundary, Catalog composition, Product configuration, and Cart rules are
+the main implementation seams.
+
+For a quick independent verification, run `pnpm test` followed by
+`pnpm test:e2e`. The complete required gate is recorded in
+[verification](docs/verification.md), and the same jobs run in
+[GitHub Actions](https://github.com/paularg/zara-challenge-inditex/actions).
+Visual review uses the Figma file linked from `DESIGN.md`; reviewers need access
+to that file separately.
+
+The key decisions are server-only Product access, Cache Components with streamed
+Product content, URL-owned confirmed Search, and a versioned browser-owned Cart
+that retains captured prices. Checkout, deployment, and a distributed copy of
+Helvetica Neue are deliberately excluded.
+
 ## Architecture
 
 The application uses the Next.js 16 App Router, React Server Components, and
@@ -74,11 +95,10 @@ HTTPS `/images/**` path. E2E sets a fixture endpoint and disables image
 optimization so Product data and imagery remain deterministic without external
 network access.
 
-The Cart is a client-owned Zustand store persisted under `mbst-cart`, version
-
-1. Hydration is explicit, corrupt or incompatible state recovers to an empty
-   Cart, and saved Cart lines retain captured prices without refetching or
-   repricing Products.
+The Cart is a client-owned Zustand store persisted under `mbst-cart`, using
+schema version `1`. Hydration is explicit, corrupt or incompatible state
+recovers to an empty Cart, and saved Cart lines retain captured prices without
+refetching or repricing Products.
 
 See [architecture](docs/architecture.md), [conventions](docs/conventions.md),
 the [domain glossary](CONTEXT.md), and the binding [design system](DESIGN.md)

@@ -182,7 +182,7 @@ The interface is a deliberately restrained smartphone catalogue and checkout exp
 
 The hierarchy is carried by scale, spacing, alignment and borders. Color is almost absent from the interface itself; it belongs primarily to the phone photography and selectable material swatches. Most copy is small, light and uppercase. Large headings remain light rather than becoming bold.
 
-This document was reconstructed from the [Figma file **Labs — Zara Web Challenge (Smartphones)**](https://www.figma.com/design/VdsDHrO5kzCWE4tplpRnLP/Labs---Zara-Web-Challenge--Smartphones---Copia-), specifically the `Design` page and its `Desktop`, `Tablet` and `Mobile` sections, with reusable values cross-checked against the `Resources` page. Its structure follows the [DESIGN.md format specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md). The canonical reference canvases are 1920×1080/2364, 834×1194/1890 and 393×852/2243. The Figma nodes, not the current implementation styles, are the visual source of truth.
+This document was reconstructed from the [Figma file **Labs — Zara Web Challenge (Smartphones)**](https://www.figma.com/design/VdsDHrO5kzCWE4tplpRnLP/Labs---Zara-Web-Challenge--Smartphones---Copia-), specifically the `Design` page and its `Desktop`, `Tablet` and `Mobile` sections, with reusable values cross-checked against the `Resources` page. Its structure follows the [DESIGN.md format specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md). The canonical reference canvases are 1920×1080/2364, 834×1194/1890 and 393×852/2243. Figma owns the reference composition, while the intentional interaction and motion extensions documented here are also part of the visual contract. `src/app/globals.css` is the centralized CSS implementation and must remain aligned with this document.
 
 Figma contains a few scratch variables, canvas-only colors and hidden logo construction layers. They are not product tokens. The values above come from visible UI nodes and component variants. The red `brand-accent` is reserved for the supplied brand artwork; it is not a general interaction color.
 
@@ -283,6 +283,15 @@ Use these stroke weights precisely:
 
 Product images retain their own photographic silhouettes and aspect ratios. Do not mask them into rounded cards or circles.
 
+## Motion
+
+Product navigation uses the browser View Transition API when it is available and
+the customer has not requested reduced motion. The old and new root views
+crossfade over 700ms with `cubic-bezier(0.22, 1, 0.36, 1)`. Catalog cards,
+similar Products, and Back navigation share this treatment. Navigation remains
+functional without View Transition support, and all animation durations collapse
+to zero or effectively zero under `prefers-reduced-motion: reduce`.
+
 ## Components
 
 ### Header
@@ -299,7 +308,7 @@ Cards use a 0.5px black border, 16px padding and a 24px gap between the image ar
 
 The information row places brand/name on the left and price on the right. Brand is 10px uppercase muted text, product name is 12px uppercase black, and price is 12px light text aligned to the lower right. Truncate long one-line values rather than wrapping the row.
 
-On hover, invert the card to black: the product name and price become white, while the brand becomes #CCCCCC. The product image remains unchanged. Do not add scaling, shadow or rounded treatment.
+On hover with a fine pointer, a black surface wipes upward across the card over 300ms with linear easing. The product name and price transition to white over the same duration, while the brand transitions to #CCCCCC. The product image remains stationary and unchanged. Do not add scaling, shadow or rounded treatment. Suppress the hover treatment on coarse pointers and reduce its duration to effectively zero when the customer requests reduced motion.
 
 ### Buttons
 
@@ -309,7 +318,7 @@ All buttons are rectangular with 0px radius, centered uppercase 12/16px labels a
 - **Standard:** transparent with a 0.5px near-black border and black label. Hover shifts border to #282624 and label to #504D49; active uses #363331 border.
 - **Disabled:** primary uses #F3F2F2 fill; standard uses a #DBD9D7 border. Both use #C2BFBC text.
 - **Heights:** the component library supports 40px, 48px and 56px through 12px, 16px and 20px vertical padding. In composed screens, desktop primary/cart actions are 56px and tablet/mobile actions are 48px.
-- Keep state changes tonal and immediate. No motion duration or easing is specified in Figma, so do not invent a pronounced animation.
+- Keep button state changes tonal and immediate; the documented Product-card and navigation motion are separate interaction treatments.
 
 ### Storage options
 
@@ -318,6 +327,8 @@ Desktop options are 95×65px with 24px padding. Unselected options use a 1px #CC
 ### Color options
 
 Each selector is a 24×24px square containing a 20×20px product-color swatch. Unselected controls use a 1px #CCCCCC border; selected uses black. Options are arranged horizontally with 16px gaps. Keep the color name as nearby 10–12px supporting text rather than inside the swatch.
+
+The selected color name enters over 300ms with `ease-out`. This supporting motion must not delay selection feedback and collapses to an effectively immediate change under reduced motion.
 
 ### Specification rows
 
