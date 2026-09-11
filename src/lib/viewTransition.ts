@@ -1,13 +1,13 @@
 const navigationCommitTimeout = 3_000
 const navigationCommitPollInterval = 16
 
-export const prefersReducedMotion = () =>
+export const prefersReducedMotion = (): boolean =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-export const canUseNavigationViewTransition = () =>
+export const canUseNavigationViewTransition = (): boolean =>
   !prefersReducedMotion() && Boolean(document.startViewTransition)
 
-export const waitForNavigationCommit = (previousUrl: string) =>
+export const waitForNavigationCommit = (previousUrl: string): Promise<void> =>
   new Promise<void>((resolve) => {
     let settled = false
     let timeout = 0
@@ -36,7 +36,7 @@ export const waitForNavigationCommit = (previousUrl: string) =>
     checkUrl()
   })
 
-export const startNavigationViewTransition = (navigate: () => void) => {
+export const startNavigationViewTransition = (navigate: () => void): void => {
   const previousUrl = window.location.href
   const transition = document.startViewTransition(async () => {
     navigate()

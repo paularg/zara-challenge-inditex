@@ -8,7 +8,7 @@ import {
   forgetProductNavigation,
   rememberProductNavigation,
   shouldReturnToRememberedProduct,
-} from '@/components/shared/productNavigationHistory'
+} from '@/lib/productNavigationHistory'
 import {
   canUseNavigationViewTransition,
   startNavigationViewTransition,
