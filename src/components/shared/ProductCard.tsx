@@ -43,6 +43,7 @@ export const ProductCard = ({
         href={
           focusProductStart ? `${productPath}#product-heading` : productPath
         }
+        rememberDestination
       >
         <span aria-hidden="true" className="catalog-card-wipe" />
         <div className="catalog-card-image">

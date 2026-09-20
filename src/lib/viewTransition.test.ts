@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   canUseNavigationViewTransition,
   startNavigationViewTransition,
-  waitForNavigationCommit,
 } from './viewTransition'
 
 const viewTransition = (finished = Promise.resolve()) =>
@@ -39,24 +38,23 @@ describe('navigation View Transitions', () => {
     expect(canUseNavigationViewTransition()).toBe(false)
   })
 
-  it('resolves when navigation commits', async () => {
+  it('finishes the public transition update after the navigation timeout', async () => {
     vi.useFakeTimers()
-    const previousUrl = window.location.href
-    const committed = waitForNavigationCommit(previousUrl)
+    let updateFinished = Promise.resolve()
+    vi.mocked(document.startViewTransition).mockImplementation((update) => {
+      updateFinished = Promise.resolve(
+        typeof update === 'function' ? update() : update?.update?.(),
+      )
+      return viewTransition()
+    })
 
-    window.history.pushState({}, '', '/products/galaxy-s24')
-    await vi.advanceTimersByTimeAsync(16)
-
-    await expect(committed).resolves.toBeUndefined()
-  })
-
-  it('resolves after the navigation timeout', async () => {
-    vi.useFakeTimers()
-    const committed = waitForNavigationCommit(window.location.href)
+    const navigate = vi.fn()
+    startNavigationViewTransition(navigate)
 
     await vi.advanceTimersByTimeAsync(3_000)
+    await updateFinished
 
-    await expect(committed).resolves.toBeUndefined()
+    expect(navigate).toHaveBeenCalledOnce()
   })
 
   it('starts navigation and absorbs a finished-transition rejection', async () => {

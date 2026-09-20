@@ -62,6 +62,29 @@ const normalizeProductSummary = (value: unknown): ProductSummary | null => {
   }
 }
 
+const uniqueProductSummaries = (
+  products: Array<ProductSummary | null>,
+  limit?: number,
+): ProductSummary[] => {
+  const productIds = new Set<string>()
+  const uniqueProducts: ProductSummary[] = []
+
+  for (const product of products) {
+    if (product === null || productIds.has(product.id)) {
+      continue
+    }
+
+    productIds.add(product.id)
+    uniqueProducts.push(product)
+
+    if (uniqueProducts.length === limit) {
+      break
+    }
+  }
+
+  return uniqueProducts
+}
+
 export const normalizeCatalog = (
   payload: unknown,
   query: string,
@@ -76,23 +99,10 @@ export const normalizeCatalog = (
     )
   }
 
-  const productIds = new Set<string>()
-  const uniqueProducts: ProductSummary[] = []
-
-  for (const product of products) {
-    if (product === null || productIds.has(product.id)) {
-      continue
-    }
-
-    productIds.add(product.id)
-    uniqueProducts.push(product)
-
-    if (!query && uniqueProducts.length === INITIAL_CATALOG_LIMIT) {
-      break
-    }
-  }
-
-  return uniqueProducts
+  return uniqueProductSummaries(
+    products,
+    query ? undefined : INITIAL_CATALOG_LIMIT,
+  )
 }
 
 const specsKeys = [
@@ -206,7 +216,7 @@ export const normalizeProduct = (
     specs,
     colorOptions: colorOptions.filter((color) => color !== null),
     storageOptions: storageOptions.filter((storage) => storage !== null),
-    similarProducts: similarProducts.filter((product) => product !== null),
+    similarProducts: uniqueProductSummaries(similarProducts),
   }
 }
 

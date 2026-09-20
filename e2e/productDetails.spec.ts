@@ -233,6 +233,49 @@ test('BACK always links to the catalog after catalog navigation @critical', asyn
   expect(problems).toEqual([])
 })
 
+test('BACK restores a confirmed Search after chained Product navigation @critical', async ({
+  page,
+}) => {
+  const problems = monitorBrowserProblems(page)
+  await configureFixture({
+    '/products?search=Galaxy': {
+      body: [productSummary('galaxy-s24-ultra')],
+    },
+    '/products/galaxy-s24-ultra': {
+      body: productDetails('galaxy-s24-ultra', {
+        similarProducts: [productSummary('next-product')],
+      }),
+    },
+    '/products/next-product': { body: productDetails('next-product') },
+  })
+
+  await page.goto('/?search=Galaxy')
+  await page
+    .getByRole('link', {
+      name: 'Open Brand galaxy-s24-ultra Product galaxy-s24-ultra',
+    })
+    .click()
+  await expect(page).toHaveURL('/products/galaxy-s24-ultra')
+  await finishAnimations(page)
+  await page
+    .getByRole('link', { name: 'Open Brand next-product Product next-product' })
+    .click()
+  await expect(page).toHaveURL('/products/next-product#product-heading')
+  await finishAnimations(page)
+
+  await page.getByRole('link', { name: 'Back' }).click()
+  await expect(page).toHaveURL('/products/galaxy-s24-ultra')
+  await finishAnimations(page)
+  await page.getByRole('link', { name: 'Back' }).click()
+
+  await expect(page).toHaveURL('/?search=Galaxy')
+  await expect(
+    page.getByRole('searchbox', { name: 'Search Products' }),
+  ).toHaveValue('Galaxy')
+  await expect(page.getByText('Product galaxy-s24-ultra')).toBeVisible()
+  expect(problems).toEqual([])
+})
+
 test('Product navigation crossfades on catalog, similar Product, and BACK history navigation', async ({
   page,
 }) => {
