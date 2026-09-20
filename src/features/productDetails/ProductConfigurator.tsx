@@ -169,7 +169,11 @@ export const ProductConfigurator = ({ product }: ProductConfiguratorProps) => {
                     )
                   })}
                   {visibleColor ? (
-                    <p aria-hidden="true" className="color-option-name">
+                    <p
+                      aria-hidden="true"
+                      className="color-option-name"
+                      key={`${visibleColor.name}-${visibleColor.hexCode}`}
+                    >
                       {visibleColor.name}
                     </p>
                   ) : null}

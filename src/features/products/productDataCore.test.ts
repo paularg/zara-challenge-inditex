@@ -187,6 +187,27 @@ describe('Product detail normalization', () => {
     ).toMatchObject({ specs: partialSpecs, storageOptions: [] })
   })
 
+  it('deduplicates similar Product identities while preserving their first occurrence', () => {
+    const first = productPayload('iphone-15-pro', { name: 'First result' })
+    const duplicate = productPayload('iphone-15-pro', {
+      name: 'Duplicate result',
+    })
+    const second = productPayload('pixel-9')
+
+    expect(
+      normalizeProduct(
+        {
+          ...productDetailsPayload,
+          similarProducts: [first, duplicate, second],
+        },
+        'galaxy-s24-ultra',
+      ).similarProducts,
+    ).toEqual([
+      expect.objectContaining({ id: 'iphone-15-pro', name: 'First result' }),
+      expect.objectContaining({ id: 'pixel-9' }),
+    ])
+  })
+
   it.each([
     ['a mismatched identity', { id: 'another-product' }],
     ['an empty color list', { colorOptions: [] }],

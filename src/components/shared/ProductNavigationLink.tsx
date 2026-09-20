@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation'
 import type { ComponentProps } from 'react'
 
 import {
-  forgetProductNavigation,
-  rememberProductNavigation,
-  shouldReturnToRememberedProduct,
-} from '@/lib/productNavigationHistory'
+  consumeCurrentNavigationDestination,
+  rememberNavigationDestination,
+} from '@/lib/navigationHistory'
 import {
   canUseNavigationViewTransition,
   startNavigationViewTransition,
@@ -16,29 +15,27 @@ import {
 
 type ProductNavigationLinkProps = Omit<ComponentProps<typeof Link>, 'href'> & {
   href: string
+  rememberDestination?: boolean
   returnToPreviousPage?: boolean
 }
 
 export const ProductNavigationLink = ({
   href,
   onNavigate,
+  rememberDestination = false,
   returnToPreviousPage = false,
   ...props
 }: ProductNavigationLinkProps) => {
   const router = useRouter()
 
   const navigate = () => {
-    const shouldReturn =
-      returnToPreviousPage && shouldReturnToRememberedProduct()
-
-    if (shouldReturn) {
-      forgetProductNavigation()
+    if (returnToPreviousPage && consumeCurrentNavigationDestination()) {
       router.back()
       return
     }
 
-    if (!returnToPreviousPage) {
-      rememberProductNavigation(href)
+    if (rememberDestination) {
+      rememberNavigationDestination(href)
     }
 
     router.push(href, { scroll: true })
@@ -50,14 +47,14 @@ export const ProductNavigationLink = ({
     onNavigate?.(event)
 
     if (!canUseNavigationViewTransition()) {
-      if (!returnToPreviousPage) {
-        rememberProductNavigation(href)
+      if (rememberDestination) {
+        rememberNavigationDestination(href)
         return
       }
 
-      if (shouldReturnToRememberedProduct()) {
+      if (returnToPreviousPage && consumeCurrentNavigationDestination()) {
         event.preventDefault()
-        navigate()
+        router.back()
       }
 
       return

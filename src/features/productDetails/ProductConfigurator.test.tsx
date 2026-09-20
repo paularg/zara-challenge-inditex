@@ -113,4 +113,18 @@ describe('ProductConfigurator', () => {
       screen.getByRole('link', { name: 'Browse Products' }),
     ).toHaveAttribute('href', '/')
   })
+
+  it('restarts the color-name entrance when the visible color changes', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<ProductConfigurator product={product} />)
+
+    await user.click(screen.getByRole('radio', { name: 'Blue titanium' }))
+    const blueName = container.querySelector('.color-option-name')
+    expect(blueName).toHaveTextContent('Blue titanium')
+
+    await user.click(screen.getByRole('radio', { name: 'Black titanium' }))
+    const blackName = container.querySelector('.color-option-name')
+    expect(blackName).toHaveTextContent('Black titanium')
+    expect(blackName).not.toBe(blueName)
+  })
 })
