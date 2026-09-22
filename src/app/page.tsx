@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, ViewTransition } from 'react'
 
 import { RecoverableErrorBoundary } from '@/components/shared/RecoverableErrorBoundary'
 import { CatalogExperience } from '@/features/catalog/CatalogExperience'
@@ -61,13 +61,21 @@ const CatalogContent = async ({
 
 export default function CatalogPage({ searchParams }: PageProps<'/'>) {
   return (
-    <section aria-labelledby="catalog-heading" className="catalog-shell">
-      <h1 className="sr-only" id="catalog-heading">
-        Smartphone catalog
-      </h1>
-      <Suspense fallback={<CatalogPageSkeleton />}>
-        <CatalogContent searchParams={searchParams} />
-      </Suspense>
-    </section>
+    <ViewTransition
+      name="product-route"
+      share="product-route-fade"
+      enter="product-route-fade"
+      exit="product-route-fade"
+      default="none"
+    >
+      <section aria-labelledby="catalog-heading" className="catalog-shell">
+        <h1 className="sr-only" id="catalog-heading">
+          Smartphone catalog
+        </h1>
+        <Suspense fallback={<CatalogPageSkeleton />}>
+          <CatalogContent searchParams={searchParams} />
+        </Suspense>
+      </section>
+    </ViewTransition>
   )
 }

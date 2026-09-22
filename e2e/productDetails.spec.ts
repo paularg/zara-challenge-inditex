@@ -18,23 +18,11 @@ test.beforeEach(async ({ page }) => {
   await routeProductImages(page)
 })
 
-const observeNextProductNavigation = async (page: Page) => {
-  await page.evaluate(() => {
-    const transitionWindow = window as typeof window & {
-      originalStartViewTransition?: typeof document.startViewTransition
-      productNavigationAnimations?: Promise<
-        Array<{ duration: number; pseudoElement: string }>
-      >
-    }
-    transitionWindow.originalStartViewTransition ??=
-      document.startViewTransition.bind(document)
-    const startViewTransition = transitionWindow.originalStartViewTransition
-    transitionWindow.productNavigationAnimations = undefined
-
-    document.startViewTransition = (update) => {
-      const transition = startViewTransition(update)
-      transitionWindow.productNavigationAnimations = transition.ready.then(() =>
-        document.getAnimations().map((animation) => {
+const expectProductNavigationCrossfade = async (page: Page) => {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const animations = document.getAnimations().map((animation) => {
           const effect = animation.effect as
             (AnimationEffect & { pseudoElement?: string }) | null
 
@@ -42,31 +30,20 @@ const observeNextProductNavigation = async (page: Page) => {
             duration: Number(effect?.getTiming().duration ?? 0),
             pseudoElement: effect?.pseudoElement ?? '',
           }
-        }),
-      )
+        })
 
-      return transition
-    }
-  })
-}
-
-const expectProductNavigationCrossfade = async (page: Page) => {
-  const animations = await page.evaluate(async () => {
-    const transitionWindow = window as typeof window & {
-      productNavigationAnimations?: Promise<
-        Array<{ duration: number; pseudoElement: string }>
-      >
-    }
-
-    return transitionWindow.productNavigationAnimations
-  })
-
-  expect(animations).toEqual(
-    expect.arrayContaining([
-      { duration: 700, pseudoElement: '::view-transition-old(root)' },
-      { duration: 700, pseudoElement: '::view-transition-new(root)' },
-    ]),
-  )
+        return ['product-route', 'root'].some((name) =>
+          ['old', 'new'].every((side) =>
+            animations.some(
+              ({ duration, pseudoElement }) =>
+                duration === 700 &&
+                pseudoElement === `::view-transition-${side}(${name})`,
+            ),
+          ),
+        )
+      }),
+    )
+    .toBe(true)
 }
 
 const finishAnimations = async (page: Page) => {
@@ -292,7 +269,6 @@ test('Product navigation crossfades on catalog, similar Product, and BACK histor
   await page.goto('/')
   await expectOpaqueTransitionShell(page, '.catalog-shell')
 
-  await observeNextProductNavigation(page)
   await page
     .getByRole('link', {
       name: 'Open Brand galaxy-s24-ultra Product galaxy-s24-ultra',
@@ -307,7 +283,6 @@ test('Product navigation crossfades on catalog, similar Product, and BACK histor
     'rgb(255, 255, 255)',
   )
 
-  await observeNextProductNavigation(page)
   await page
     .getByRole('link', { name: 'Open Brand next-product Product next-product' })
     .click()
@@ -320,7 +295,6 @@ test('Product navigation crossfades on catalog, similar Product, and BACK histor
     'rgb(255, 255, 255)',
   )
 
-  await observeNextProductNavigation(page)
   await page.getByRole('link', { name: 'Back' }).click()
   await expect(page).toHaveURL('/products/galaxy-s24-ultra')
   await expectProductNavigationCrossfade(page)
@@ -349,13 +323,142 @@ test('catalog navigation from a scrolled card crossfades the viewport at the scr
   await target.scrollIntoViewIfNeeded()
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
 
-  await observeNextProductNavigation(page)
   await target.click()
 
   await expect(page).toHaveURL('/products/catalog-product-11')
   await expectProductNavigationCrossfade(page)
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
   expect(problems).toEqual([])
+})
+
+test('Search and Product configuration do not trigger a page crossfade', async ({
+  page,
+}) => {
+  await configureFixture({
+    '/products': { body: [productSummary('galaxy-s24-ultra')] },
+    '/products?search=Galaxy': {
+      body: [productSummary('galaxy-s24-ultra')],
+    },
+    '/products/galaxy-s24-ultra': { body: productDetails() },
+  })
+  await page.goto('/')
+
+  await page.getByRole('searchbox', { name: 'Search Products' }).fill('Galaxy')
+  await expect(page).toHaveURL('/?search=Galaxy')
+  expect(
+    await page.evaluate(() =>
+      document
+        .getAnimations()
+        .some((animation) =>
+          (
+            animation.effect as AnimationEffect & { pseudoElement?: string }
+          )?.pseudoElement?.includes('product-route'),
+        ),
+    ),
+  ).toBe(false)
+
+  await page
+    .getByRole('link', {
+      name: 'Open Brand galaxy-s24-ultra Product galaxy-s24-ultra',
+    })
+    .click()
+  await expect(page).toHaveURL('/products/galaxy-s24-ultra')
+  await finishAnimations(page)
+  await page.getByText('512 GB', { exact: true }).click()
+  expect(
+    await page.evaluate(() =>
+      document
+        .getAnimations()
+        .some((animation) =>
+          (
+            animation.effect as AnimationEffect & { pseudoElement?: string }
+          )?.pseudoElement?.includes('product-route'),
+        ),
+    ),
+  ).toBe(false)
+})
+
+test('Product navigation remains functional without motion', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await configureFixture({
+    '/products': { body: [productSummary('galaxy-s24-ultra')] },
+    '/products/galaxy-s24-ultra': { body: productDetails() },
+  })
+  await page.goto('/')
+  await page
+    .getByRole('link', {
+      name: 'Open Brand galaxy-s24-ultra Product galaxy-s24-ultra',
+    })
+    .click()
+  await expect(page).toHaveURL('/products/galaxy-s24-ultra')
+  await expect(
+    page.getByRole('heading', { name: 'Galaxy S24 Ultra' }),
+  ).toBeVisible()
+  expect(
+    await page.evaluate(() =>
+      document.getAnimations().some((animation) => {
+        const effect = animation.effect as
+          (AnimationEffect & { pseudoElement?: string }) | null
+
+        return (
+          effect?.pseudoElement?.startsWith('::view-transition-') &&
+          Number(effect.getTiming().duration ?? 0) >= 100
+        )
+      }),
+    ),
+  ).toBe(false)
+
+  await page.getByRole('link', { name: 'Back' }).click()
+  await expect(page).toHaveURL('/')
+  await expect(
+    page.getByRole('heading', { name: 'Smartphone catalog' }),
+  ).toBeAttached()
+  expect(
+    await page.evaluate(() =>
+      document.getAnimations().some((animation) => {
+        const effect = animation.effect as
+          (AnimationEffect & { pseudoElement?: string }) | null
+
+        return (
+          effect?.pseudoElement?.startsWith('::view-transition-') &&
+          Number(effect.getTiming().duration ?? 0) >= 100
+        )
+      }),
+    ),
+  ).toBe(false)
+})
+
+test('Product navigation works when View Transitions are unsupported', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      value: undefined,
+    })
+  })
+  await configureFixture({
+    '/products': { body: [productSummary('galaxy-s24-ultra')] },
+    '/products/galaxy-s24-ultra': { body: productDetails() },
+  })
+  await page.goto('/')
+  await page
+    .getByRole('link', {
+      name: 'Open Brand galaxy-s24-ultra Product galaxy-s24-ultra',
+    })
+    .click()
+  await expect(page).toHaveURL('/products/galaxy-s24-ultra')
+  await expect(
+    page.getByRole('heading', { name: 'Galaxy S24 Ultra' }),
+  ).toBeVisible()
+
+  await page.getByRole('link', { name: 'Back' }).click()
+  await expect(page).toHaveURL('/')
+  await expect(
+    page.getByRole('heading', { name: 'Smartphone catalog' }),
+  ).toBeAttached()
 })
 
 test('BACK falls back to the catalog from a fresh Product deep link @critical', async ({
