@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, ViewTransition } from 'react'
 
 import { ProductNavigationLink } from '@/components/shared/ProductNavigationLink'
 import { RecoverableErrorBoundary } from '@/components/shared/RecoverableErrorBoundary'
@@ -57,31 +57,39 @@ export default function ProductPage({
   params,
 }: PageProps<'/products/[productId]'>) {
   return (
-    <section className="product-shell">
-      <div className="back-row">
-        <ProductNavigationLink
-          className="focus-outline back-link"
-          href="/"
-          returnToPreviousPage
+    <ViewTransition
+      name="product-route"
+      share="product-route-fade"
+      enter="product-route-fade"
+      exit="product-route-fade"
+      default="none"
+    >
+      <section className="product-shell">
+        <div className="back-row">
+          <ProductNavigationLink
+            className="focus-outline back-link"
+            href="/"
+            returnToPreviousPage
+          >
+            <Image
+              aria-hidden="true"
+              alt=""
+              height={20}
+              src="/assets/chevron-left.svg"
+              width={20}
+            />
+            Back
+          </ProductNavigationLink>
+        </div>
+        <RecoverableErrorBoundary
+          message="The Product could not be displayed."
+          title="Product unavailable"
         >
-          <Image
-            aria-hidden="true"
-            alt=""
-            height={20}
-            src="/assets/chevron-left.svg"
-            width={20}
-          />
-          Back
-        </ProductNavigationLink>
-      </div>
-      <RecoverableErrorBoundary
-        message="The Product could not be displayed."
-        title="Product unavailable"
-      >
-        <Suspense fallback={<ProductSkeleton />}>
-          <ProductContent params={params} />
-        </Suspense>
-      </RecoverableErrorBoundary>
-    </section>
+          <Suspense fallback={<ProductSkeleton />}>
+            <ProductContent params={params} />
+          </Suspense>
+        </RecoverableErrorBoundary>
+      </section>
+    </ViewTransition>
   )
 }

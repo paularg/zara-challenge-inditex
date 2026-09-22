@@ -285,12 +285,14 @@ Product images retain their own photographic silhouettes and aspect ratios. Do n
 
 ## Motion
 
-Product navigation uses the browser View Transition API when it is available and
-the customer has not requested reduced motion. The old and new root views
-crossfade over 700ms with `cubic-bezier(0.22, 1, 0.36, 1)`. Catalog cards,
-similar Products, and Back navigation share this treatment. Navigation remains
-functional without View Transition support, and all animation durations collapse
-to zero or effectively zero under `prefers-reduced-motion: reduce`.
+Catalog and Product routes use React's `<ViewTransition>` to crossfade their
+content over 700ms with `cubic-bezier(0.22, 1, 0.36, 1)` during forward
+navigation. Back retains browser-history semantics; because React skips
+`popstate` animations, that control uses a scoped browser View Transition with
+the same 700ms root crossfade. Search typing, Product configuration, and
+unrelated route changes do not animate the page. Navigation remains functional
+without View Transition support, and all animation durations collapse to zero
+or effectively zero under `prefers-reduced-motion: reduce`.
 
 ## Components
 
